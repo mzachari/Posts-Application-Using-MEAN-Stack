@@ -6,7 +6,7 @@ const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/user');
 
 const app = express();
-mongoose.connect('mongodb+srv://mariazac:ZWPKPIu3Qf5BnzjW@cluster0-jsznh.mongodb.net/node-angular')
+mongoose.connect("mongodb+srv://mariazac:" + process.env.MONGO_ATLAS_PW + "@cluster0-jsznh.mongodb.net/node-angular",{useNewUrlParser: true})
         .then(() =>{
           console.log('Connected to database!');
         })
@@ -14,7 +14,7 @@ mongoose.connect('mongodb+srv://mariazac:ZWPKPIu3Qf5BnzjW@cluster0-jsznh.mongodb
           console.log(error);
           console.log('Connection failed!');
         })
-app.use("/images", express.static(path.join("backend/images")));
+app.use("/images", express.static(path.join("images")));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use((req,res,next) =>{

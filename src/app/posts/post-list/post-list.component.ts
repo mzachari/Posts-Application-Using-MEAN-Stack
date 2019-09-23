@@ -6,9 +6,9 @@ import { PostService } from '../posts.service';
 import { PageEvent } from '@angular/material';
 import { AuthService } from 'src/app/auth/auth.service';
 @Component({
-  selector : 'app-post-list',
-  templateUrl : './post-list.component.html',
-  styleUrls : ['./post-list.component.css']
+  selector: 'app-post-list',
+  templateUrl: './post-list.component.html',
+  styleUrls: ['./post-list.component.css']
 })
 export class PostListComponent implements OnInit, OnDestroy {
   // posts = [
@@ -27,13 +27,13 @@ export class PostListComponent implements OnInit, OnDestroy {
   currentPage = 1;
   userId: string;
   private authListenerSubs: Subscription;
-  constructor(public postsService: PostService, private authService: AuthService) {}
+  constructor(public postsService: PostService, private authService: AuthService) { }
   ngOnInit() {
     // this.isLoading =  true;
     this.userId = this.authService.getUserId();
     this.isAuthenticated = this.authService.isAuth();
     this.postsService.getPosts(this.postsPerPage, this.currentPage);
-    this.postSub = this.postsService.getPostUpdateListener().subscribe((postData: {posts: Post[], postCount: number}) => {
+    this.postSub = this.postsService.getPostUpdateListener().subscribe((postData: { posts: Post[], postCount: number }) => {
       this.isLoading = false;
       this.totalPosts = postData.postCount;
       this.posts = postData.posts;
@@ -52,6 +52,8 @@ export class PostListComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.postsService.deletePost(postId).subscribe(() => {
       this.postsService.getPosts(this.postsPerPage, this.currentPage);
+    }, () => {
+      this.isLoading = false;
     });
   }
 

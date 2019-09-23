@@ -10,7 +10,7 @@ module.exports = (req, res, next) => {
   catch (err) {
     console.log("req1");
     res.status(401).json({
-      message: "Auth Failed!"
+      message: "You are not authenticated!"
     });
   }
 }

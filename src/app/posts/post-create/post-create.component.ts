@@ -1,16 +1,18 @@
-import {Component, EventEmitter, Output, OnInit} from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { Post } from '../post.model';
 import { PostService } from '../posts.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { mimeType } from './mime-type.validator';
+import { Subscription } from 'rxjs';
+import { AuthService } from 'src/app/auth/auth.service';
 @Component({
   selector: 'app-post-create',
-  templateUrl :  './post-create.component.html',
-  styleUrls : ['./post-create.component.css']
+  templateUrl: './post-create.component.html',
+  styleUrls: ['./post-create.component.css']
 })
-export class PostCreateComponent implements OnInit {
+export class PostCreateComponent implements OnInit, OnDestroy {
   enteredContent = '';
   enteredTitle = '';
   post: Post;
@@ -19,13 +21,21 @@ export class PostCreateComponent implements OnInit {
   private postId: string;
   form: FormGroup;
   imagePreview: string;
-  constructor(public postService: PostService, public route: ActivatedRoute) {}
+  private authStatusSub: Subscription;
+  constructor(public postService: PostService, public route: ActivatedRoute, private authService: AuthService) { }
 
   ngOnInit() {
     this.form = new FormGroup({
-      title: new FormControl(null, {validators: [Validators.required, Validators.minLength(3)]}),
-      content: new FormControl(null, {validators: [Validators.required]}),
-      image: new FormControl(null, {validators: [Validators.required], asyncValidators: [mimeType]})
+      title: new FormControl(null, { validators: [Validators.required, Validators.minLength(3)] }),
+      content: new FormControl(null, { validators: [Validators.required] }),
+      image: new FormControl(null, { validators: [Validators.required], asyncValidators: [mimeType] })
+    });
+    this.authStatusSub = this.authService.getAuthStatusListener().subscribe(authStatus => {
+      console.log(authStatus);
+      if (authStatus) {
+
+        this.isLoading = false;
+      }
     });
     this.route.paramMap.subscribe((paramMap: ParamMap) => {
       if (paramMap.has('postId')) {
@@ -64,9 +74,9 @@ export class PostCreateComponent implements OnInit {
     }
     this.isLoading = true;
     if (this.mode === 'create') {
-      this.postService.addPost (this.form.value.title, this.form.value.content, this.form.value.image);
+      this.postService.addPost(this.form.value.title, this.form.value.content, this.form.value.image);
     } else {
-      this.postService.updatePost (this.postId, this.form.value.title, this.form.value.content, this.form.value.image);
+      this.postService.updatePost(this.postId, this.form.value.title, this.form.value.content, this.form.value.image);
     }
     this.form.reset();
 
@@ -74,14 +84,16 @@ export class PostCreateComponent implements OnInit {
 
   onImagePicked(event: Event) {
     const file = (event.target as HTMLInputElement).files[0];
-    this.form.patchValue({image: file});
+    this.form.patchValue({ image: file });
     this.form.get('image').updateValueAndValidity();
     const reader = new FileReader();
     reader.onload = () => {
       this.imagePreview = reader.result as string;
     };
     reader.readAsDataURL(file);
+  }
 
-
+  ngOnDestroy(): void {
+    this.authStatusSub.unsubscribe();
   }
 }
